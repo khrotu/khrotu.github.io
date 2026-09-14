@@ -123,8 +123,8 @@
     const head = el("div", "flex items-baseline gap-2 text-sm");
     head.append(
       el("span", "font-medium text-[var(--text-main)] break-words min-w-0", note.name),
-      el("span", "text-[var(--text-muted)]/30 select-none", "·"),
-      el("span", "text-xs text-[var(--text-muted)]/40 whitespace-nowrap shrink-0", fmtDate(note.created_at)),
+      el("span", "text-[#767676] select-none", "·"),
+      el("span", "text-xs text-[#767676] whitespace-nowrap shrink-0", fmtDate(note.created_at)),
     );
     card.append(head);
     if (note.is_hidden) {

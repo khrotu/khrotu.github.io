@@ -49,7 +49,7 @@
   --border-bezel: rgba(255, 255, 255, 0.94);
   color-scheme: dark;
 }
-:focus-visible {
+:focus-visible:not(:where(input, textarea, select)) {
   outline: 2px solid rgba(255, 255, 255, 0.7);
   outline-offset: 2px;
 }
