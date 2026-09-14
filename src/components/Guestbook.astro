@@ -142,7 +142,7 @@
       btn.setAttribute("aria-expanded", "false");
       btn.addEventListener("click", () => {
         const isHidden = body.classList.toggle("hidden");
-        btn.textContent = isHidden ? "hidden as possible spam; reveal?" : "hide";
+        btn.textContent = isHidden ? "possible spam. reveal?" : "hide";
         btn.setAttribute("aria-expanded", String(!isHidden));
       });
       card.append(body, btn);
