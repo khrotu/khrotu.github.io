@@ -77,25 +77,25 @@ const cardClass = 'shrink-0 w-[85vw] md:w-[400px] bg-transparent border border-[
 ---
 <Layout>
   <link rel="preload" href="/pfp.webp" as="image" slot="head" />
-  <main class="max-w-6xl md:ml-[10%] lg:ml-[12%] px-6 py-12 md:py-20 flex flex-col gap-24">
-    <div class="flex items-center justify-start gap-8 text-[var(--text-muted)]">
-      <a href="https://github.com/khrotu" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 hover:text-white transition-colors group">
+  <main id="main-content" class="max-w-6xl md:ml-[10%] lg:ml-[12%] px-6 py-12 md:py-20 flex flex-col gap-24">
+    <nav aria-label="profile links" class="flex items-center justify-start gap-8 text-[var(--text-muted)]">
+      <a href="https://github.com/khrotu" target="_blank" rel="noopener noreferrer" aria-label="my github" class="flex items-center gap-3 hover:text-white transition-colors group">
         <img src="/github.svg" alt="GitHub" width="20" height="20" decoding="async" class="opacity-80 group-hover:opacity-100 transition-opacity" />
         <span class="font-mono text-sm">/ khrotu</span>
       </a>
-      <a href="https://www.linkedin.com/in/mohan-yan-43905437b/" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 hover:text-white transition-colors group">
+      <a href="https://www.linkedin.com/in/mohan-yan-43905437b/" target="_blank" rel="noopener noreferrer" aria-label="my linkedin" class="flex items-center gap-3 hover:text-white transition-colors group">
         <img src="/linkedin.svg" alt="LinkedIn" width="20" height="20" decoding="async" class="opacity-80 group-hover:opacity-100 transition-opacity" />
         <span class="font-mono text-sm">/ me</span>
       </a>
-      <a href="/blogs" class="flex items-center gap-3 hover:text-white transition-colors group">
+      <a href="/blogs" aria-label="blogs" class="flex items-center gap-3 hover:text-white transition-colors group">
         <img src="/favicon-contrast.svg" alt="Blogs" width="20" height="20" decoding="async" class="opacity-80 group-hover:opacity-100 transition-opacity" />
         <span class="font-mono text-sm">/ blogs</span>
       </a>
-      <a href="/startpage" class="flex items-center gap-3 hover:text-white transition-colors group">
+      <a href="/startpage" aria-label="startpage" class="flex items-center gap-3 hover:text-white transition-colors group">
         <img src="/favicon-startpage-contrast.svg" alt="Startpage" width="20" height="20" decoding="async" class="opacity-80 group-hover:opacity-100 transition-opacity" />
         <span class="font-mono text-sm">/ startpage</span>
       </a>
-    </div>
+    </nav>
     <section class="flex flex-col gap-8">
       <div class="flex items-center gap-6">
         <img
@@ -130,7 +130,7 @@ const cardClass = 'shrink-0 w-[85vw] md:w-[400px] bg-transparent border border-[
       {rows.map((row) => (
         <div class="flex flex-col gap-6">
           <h3 class="text-xl font-medium text-[var(--text-muted)]">{row.heading}</h3>
-          <div class="drag-row flex overflow-x-auto gap-6 pb-4 hide-scrollbar cursor-grab">
+          <div class="drag-row flex overflow-x-auto gap-6 pb-4 hide-scrollbar cursor-grab" role="region" tabindex="0" aria-label={row.heading}>
             {row.items.map((item) => (
               <article class={cardClass}>
                 <div class="flex justify-between items-start gap-4">
@@ -145,21 +145,34 @@ const cardClass = 'shrink-0 w-[85vw] md:w-[400px] bg-transparent border border-[
       ))}
     </section>
     <Guestbook />
-    <section class="pt-16 border-t border-[var(--border-bezel)]/20 flex flex-col gap-6">
+    <section aria-label="reach out" class="pt-16 border-t border-[var(--border-bezel)]/20 flex flex-col gap-6">
       <h2 class="text-2xl font-medium text-[var(--text-main)]">reach out</h2>
-      <div class="flex flex-wrap gap-x-8 gap-y-3 text-lg text-[var(--text-muted)]">
-        <a href="mailto:3o65iduqd@mozmail.com" class="hover:text-white transition-colors">email</a>
-        <a href="https://github.com/khrotu" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors">github</a>
-        <a href="https://x.com/khrotubutms/" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors">twitter</a>
-        <a href="https://bsky.app/profile/khrotubutbsky.bsky.social" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors">bluesky</a>
-        <a href="https://www.linkedin.com/in/mohan-yan-43905437b/" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors">linkedin</a>
-      </div>
+      <nav aria-label="contact">
+        <ul class="flex flex-wrap gap-x-8 gap-y-3 text-lg text-[var(--text-muted)]">
+          <li><a href="mailto:3o65iduqd@mozmail.com" class="hover:text-white transition-colors">email</a></li>
+          <li><a href="https://github.com/khrotu" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors">github</a></li>
+          <li><a href="https://x.com/khrotubutms/" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors">twitter</a></li>
+          <li><a href="https://bsky.app/profile/khrotubutbsky.bsky.social" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors">bluesky</a></li>
+          <li><a href="https://www.linkedin.com/in/mohan-yan-43905437b/" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors">linkedin</a></li>
+        </ul>
+      </nav>
     </section>
   </main>
 </Layout>
 <script>
   const rows = document.querySelectorAll<HTMLElement>('.drag-row');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   rows.forEach((el) => {
+    el.addEventListener('keydown', (e) => {
+      const step = el.clientWidth * 0.8;
+      if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        el.scrollBy({ left: step, behavior: reduceMotion ? 'auto' : 'smooth' });
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        el.scrollBy({ left: -step, behavior: reduceMotion ? 'auto' : 'smooth' });
+      }
+    });
     let dragging = false;
     let startX = 0;
     let scrollLeft = 0;
@@ -168,7 +181,7 @@ const cardClass = 'shrink-0 w-[85vw] md:w-[400px] bg-transparent border border-[
     let velX = 0;
     let frame = 0;
     const momentum = () => {
-      if (dragging) return;
+      if (dragging || reduceMotion) return;
       velX *= 0.96;
       el.scrollLeft -= velX;
       if (Math.abs(velX) >= 0.5) frame = requestAnimationFrame(momentum);

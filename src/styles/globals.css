@@ -47,6 +47,22 @@
   --text-main: rgba(255, 255, 255, 0.87);
   --text-muted: rgba(255, 255, 255, 0.60);
   --border-bezel: rgba(255, 255, 255, 0.94);
+  color-scheme: dark;
+}
+:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.7);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 body {
   background-color: var(--bg-main);

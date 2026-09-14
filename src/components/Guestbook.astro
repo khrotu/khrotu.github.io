@@ -58,7 +58,7 @@
       <p id="guestbook-status" aria-live="polite" class="text-sm text-[var(--text-muted)] min-h-5"></p>
     </form>
     <div class="flex-1 min-w-0 flex flex-col">
-      <div id="guestbook-list" class="flex flex-col gap-8 md:max-h-[560px] md:overflow-y-auto md:pr-2"></div>
+      <div id="guestbook-list" aria-label="notes" class="flex flex-col gap-8 md:max-h-[560px] md:overflow-y-auto md:pr-2"></div>
       <noscript>
         <p class="text-sm text-[var(--text-muted)]">enable js pls. im working on html rn.</p>
       </noscript>
@@ -161,6 +161,7 @@
       (depth > 0 ? "↳ reply" : "reply"),
     );
     reply.type = "button";
+    reply.setAttribute("aria-label", `reply to ${note.name}`);
     reply.addEventListener("click", () => {
       replyTo = { id: note.id, name: note.name };
       replyingName.textContent = note.name;
@@ -196,6 +197,7 @@
   }
   async function load() {
     listEl.innerHTML = "";
+    listEl.setAttribute("aria-busy", "true");
     listEl.append(el("p", "text-[var(--text-muted)]", "loading notes…"));
     try {
       const res = await fetch(
@@ -208,6 +210,8 @@
       console.error(err);
       listEl.innerHTML = "";
       listEl.append(el("p", "text-[var(--text-muted)]", "couldn't load notes. try again later."));
+    } finally {
+      listEl.removeAttribute("aria-busy");
     }
   }
   form.addEventListener("submit", async (e) => {

@@ -12,6 +12,8 @@ const { title = 'khrotu', description = "i'd like to think i'm a relatively comp
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#040404" />
+    <meta name="color-scheme" content="dark" />
     <meta name="description" content={description} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
@@ -26,6 +28,7 @@ const { title = 'khrotu', description = "i'd like to think i'm a relatively comp
     <slot name="head" />
   </head>
   <body class="selection:bg-white/20">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-3 focus:py-2 focus:bg-white focus:text-black focus:rounded-sm focus:text-sm">skip to content</a>
     <slot />
   </body>
 </html>

@@ -15,7 +15,7 @@ const rawDescription = (post.body || '').replace(/!\[.*?\]\(.*?\)/g, '').replace
 const pageTitle = `${post.data.title} | khrotu`;
 ---
 <Layout title={pageTitle} description={rawDescription}>
-  <main class="max-w-6xl md:ml-[10%] lg:ml-[12%] px-6 py-20 md:py-32 flex flex-col gap-20">
+  <main id="main-content" class="max-w-6xl md:ml-[10%] lg:ml-[12%] px-6 py-20 md:py-32 flex flex-col gap-20">
     <a href="/blogs" class="flex items-center gap-2 text-lg text-[var(--text-muted)] hover:text-white transition-colors w-fit">
       <span class="w-6 h-6"><ArrowLeft /></span> back to blogs
     </a>
@@ -24,7 +24,7 @@ const pageTitle = `${post.data.title} | khrotu`;
         <h1 class="text-4xl font-medium text-[var(--text-main)]">
           {post.data.title}
         </h1>
-        <span class="text-lg text-[var(--text-muted)]">{post.data.date}</span>
+        <time class="text-lg text-[var(--text-muted)]" datetime={post.data.date}>{post.data.date}</time>
       </div>
       <div class="markdown-body text-xl text-[var(--text-muted)] leading-relaxed">
         <BlogContent content={post.body || ''} />

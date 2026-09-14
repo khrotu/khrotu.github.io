@@ -142,7 +142,7 @@ export default function BlogContent({ content }: Props) {
               {children}
             </code>
           ) : (
-            <pre className="bg-[#111] p-4 rounded overflow-x-auto my-6">
+            <pre className="bg-[#111] p-4 rounded overflow-x-auto my-6" tabIndex={0} role="region" aria-label="code block">
               <code className={`${className} text-[1em] font-mono`}>
                 {children}
               </code>
