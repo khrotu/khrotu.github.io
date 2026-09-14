@@ -57,8 +57,11 @@
       </button>
       <p id="guestbook-status" aria-live="polite" class="text-sm text-[var(--text-muted)] min-h-5"></p>
     </form>
-    <div class="flex-1 min-w-0 flex flex-col gap-4">
-      <div id="guestbook-list" class="flex flex-col gap-4 md:max-h-[560px] md:overflow-y-auto md:pr-2"></div>
+    <div class="flex-1 min-w-0 flex flex-col">
+      <div id="guestbook-list" class="flex flex-col gap-8 md:max-h-[560px] md:overflow-y-auto md:pr-2"></div>
+      <noscript>
+        <p class="text-sm text-[var(--text-muted)]">enable js pls. im working on html rn.</p>
+      </noscript>
     </div>
   </div>
 </section>
@@ -115,24 +118,25 @@
   function renderNote(note: GuestbookNote, depth: number): HTMLElement {
     const card = el(
       "article",
-      "flex flex-col gap-2 border border-white/10 rounded-sm p-4" + (depth > 0 ? " ml-6" : ""),
+      "group flex flex-col gap-1" + (depth > 0 ? " ml-6 md:ml-8" : ""),
     );
-    const head = el("div", "flex items-baseline justify-between gap-4");
+    const head = el("div", "flex items-baseline gap-2 text-sm");
     head.append(
       el("span", "font-medium text-[var(--text-main)] break-words min-w-0", note.name),
-      el("span", "text-xs text-[var(--text-muted)]/70 whitespace-nowrap shrink-0", fmtDate(note.created_at)),
+      el("span", "text-[var(--text-muted)]/30 select-none", "·"),
+      el("span", "text-xs text-[var(--text-muted)]/40 whitespace-nowrap shrink-0", fmtDate(note.created_at)),
     );
     card.append(head);
     if (note.is_hidden) {
       const body = el(
         "p",
-        "hidden text-[var(--text-muted)] leading-relaxed whitespace-pre-wrap break-words",
+        "hidden text-sm text-[var(--text-muted)]/70 leading-relaxed whitespace-pre-wrap break-words",
         note.message,
       );
       const btn = el(
         "button",
-        "text-xs italic text-[var(--text-muted)]/70 hover:text-white transition-colors w-fit",
-        "hidden as possible spam; reveal?",
+        "text-xs italic text-white/50 hover:text-white transition-colors w-fit",
+        "possible spam. reveal?",
       );
       btn.type = "button";
       btn.setAttribute("aria-expanded", "false");
@@ -144,10 +148,18 @@
       card.append(body, btn);
     } else {
       card.append(
-        el("p", "text-[var(--text-muted)] leading-relaxed whitespace-pre-wrap break-words", note.message),
+        el(
+          "p",
+          "text-[15px] text-[var(--text-muted)] leading-relaxed whitespace-pre-wrap break-words",
+          note.message,
+        ),
       );
     }
-    const reply = el("button", "text-xs text-[var(--text-muted)]/70 hover:text-white transition-colors w-fit", "reply");
+    const reply = el(
+      "button",
+      "text-xs text-white/50 hover:text-white transition-colors w-fit",
+      (depth > 0 ? "↳ reply" : "reply"),
+    );
     reply.type = "button";
     reply.addEventListener("click", () => {
       replyTo = { id: note.id, name: note.name };
