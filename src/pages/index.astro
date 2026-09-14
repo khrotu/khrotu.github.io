@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import Guestbook from '../components/Guestbook.astro';
 const rows = [
   {
     heading: "stuff i'm proud of",
@@ -10,17 +11,17 @@ const rows = [
         body: 'pretty cool, right?',
       },
       {
-        titleHtml: '<a href="https://github.com/KHROTU/arc" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors underline underline-offset-4 decoration-white/20 hover:decoration-white/60">Arc</a>',
+        titleHtml: '<a href="https://github.com/khrotu/arc" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors underline underline-offset-4 decoration-white/20 hover:decoration-white/60">Arc</a>',
         period: '2026 - present',
         bodyHtml: 'sub-1 mb agentic coding assistant for VS Code with free GLM 5.3 Flash. <a href="https://marketplace.visualstudio.com/items?itemName=khrotu.arc-code" target="_blank" rel="noopener noreferrer" class="underline hover:text-white transition-colors">install</a>.',
       },
       {
-        titleHtml: '<a href="https://github.com/KHROTU/mousemaster" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors underline underline-offset-4 decoration-white/20 hover:decoration-white/60">MouseMaster</a>',
+        titleHtml: '<a href="https://github.com/khrotu/mousemaster" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors underline underline-offset-4 decoration-white/20 hover:decoration-white/60">MouseMaster</a>',
         period: '2026',
         body: 'autoclicker that simulates realistic clicking that isn\'t just a random function.',
       },
       {
-        titleHtml: '<a href="https://github.com/KHROTU/schematic-diffusion" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors underline underline-offset-4 decoration-white/20 hover:decoration-white/60">schematic-diffusion</a>',
+        titleHtml: '<a href="https://github.com/khrotu/schematic-diffusion" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors underline underline-offset-4 decoration-white/20 hover:decoration-white/60">schematic-diffusion</a>',
         period: '2025',
         body: 'a text-conditional 3D diffusion model for generating minecraft schematics.',
       },
@@ -45,7 +46,7 @@ const rows = [
         body: 'i write userscripts and port extensions sometimes.',
       },
       {
-        titleHtml: '<a href="https://github.com/KHROTU/victordle" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors underline underline-offset-4 decoration-white/20 hover:decoration-white/60">victordle</a>',
+        titleHtml: '<a href="https://github.com/khrotu/victordle" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors underline underline-offset-4 decoration-white/20 hover:decoration-white/60">victordle</a>',
         period: '2025',
         body: 'idiot loses at victordle repeatedly so immediately turns to cheating.',
       },
@@ -65,7 +66,7 @@ const rows = [
         body: 'first try at real time stuff using ably. shut down due to my incapability in not messing stuff up with connections.',
       },
       {
-        titleHtml: '<a href="https://github.com/KHROTU/kortex" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors underline underline-offset-4 decoration-white/20 hover:decoration-white/60">kortex</a>',
+        titleHtml: '<a href="https://github.com/khrotu/kortex" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors underline underline-offset-4 decoration-white/20 hover:decoration-white/60">kortex</a>',
         period: '2025',
         body: 'clippy better fr fr.',
       },
@@ -125,7 +126,7 @@ const cardClass = 'shrink-0 w-[85vw] md:w-[400px] bg-transparent border border-[
       </div>
     </section>
     <section class="flex flex-col gap-12">
-      <h2 class="text-3xl font-medium text-[var(--text-main)]">what I've been up to</h2>
+      <h2 class="text-3xl font-medium text-[var(--text-main)]">what i've been up to</h2>
       {rows.map((row) => (
         <div class="flex flex-col gap-6">
           <h3 class="text-xl font-medium text-[var(--text-muted)]">{row.heading}</h3>
@@ -143,6 +144,7 @@ const cardClass = 'shrink-0 w-[85vw] md:w-[400px] bg-transparent border border-[
         </div>
       ))}
     </section>
+    <Guestbook />
     <section class="pt-16 border-t border-[var(--border-bezel)]/20 flex flex-col gap-6">
       <h2 class="text-2xl font-medium text-[var(--text-main)]">reach out</h2>
       <div class="flex flex-wrap gap-x-8 gap-y-3 text-lg text-[var(--text-muted)]">

@@ -23,6 +23,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
-    "glob": "^13.0.6"
+    "glob": "^13.0.6",
+    "supabase": "^2.117.0"
   }
 }

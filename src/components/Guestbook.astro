@@ -1,0 +1,238 @@
+---
+---
+<section aria-label="Guestbook" class="flex flex-col gap-6">
+  <h2 class="text-3xl font-medium text-[var(--text-main)]">leave a note</h2>
+  <div class="flex flex-col md:flex-row gap-10">
+    <form id="guestbook-form" class="flex flex-col gap-4 md:w-[40%] md:shrink-0" novalidate>
+      <label class="flex flex-col gap-2 text-sm text-[var(--text-muted)]">
+        name
+        <input
+          id="guestbook-name"
+          name="name"
+          type="text"
+          required
+          maxlength="60"
+          autocomplete="nickname"
+          placeholder="anon"
+          class="w-full bg-transparent border border-white/15 rounded-sm px-3 py-2 text-base text-[var(--text-main)] outline-none focus:border-white/50 transition-colors placeholder:text-[var(--text-muted)]/50"
+        />
+      </label>
+      <label class="flex flex-col gap-2 text-sm text-[var(--text-muted)]">
+        message
+        <textarea
+          id="guestbook-message"
+          name="message"
+          required
+          maxlength="2000"
+          rows="5"
+          placeholder="give me your attention rahhh"
+          class="w-full bg-transparent border border-white/15 rounded-sm px-3 py-2 text-base text-[var(--text-main)] outline-none focus:border-white/50 transition-colors placeholder:text-[var(--text-muted)]/50 resize-y"
+        ></textarea>
+      </label>
+      <input
+        id="guestbook-website"
+        name="website"
+        type="text"
+        tabindex="-1"
+        autocomplete="off"
+        aria-hidden="true"
+        class="absolute -left-[9999px] top-auto h-px w-px opacity-0"
+      />
+      <div id="guestbook-replying" class="hidden items-center gap-3 text-sm text-[var(--text-muted)]">
+        <span>replying to <span id="guestbook-replying-name" class="text-[var(--text-main)]"></span></span>
+        <button
+          type="button"
+          id="guestbook-reply-cancel"
+          class="underline underline-offset-4 hover:text-white transition-colors"
+        >
+          cancel
+        </button>
+      </div>
+      <button
+        id="guestbook-submit"
+        type="submit"
+        class="px-4 py-2 border border-white/20 rounded-sm text-[var(--text-main)] hover:bg-white hover:text-black transition-colors w-fit disabled:opacity-50 disabled:pointer-events-none"
+      >
+        post
+      </button>
+      <p id="guestbook-status" aria-live="polite" class="text-sm text-[var(--text-muted)] min-h-5"></p>
+    </form>
+    <div class="flex-1 min-w-0 flex flex-col gap-4">
+      <div id="guestbook-list" class="flex flex-col gap-4 md:max-h-[560px] md:overflow-y-auto md:pr-2"></div>
+    </div>
+  </div>
+</section>
+<script>
+  interface GuestbookNote {
+    id: string;
+    name: string;
+    message: string;
+    parent_id: string | null;
+    is_hidden: boolean;
+    created_at: string;
+  }
+  const FALLBACK_URL = "https://beepqeudfhsgrbgiyarl.supabase.co";
+  const FALLBACK_ANON_KEY = "sb_publishable_T_BBG-xlMoLUNkoc1aa4kw_GMGvr_PH";
+  const SUPABASE_URL = (import.meta.env.PUBLIC_SUPABASE_URL || FALLBACK_URL).replace(/\/+$/, "");
+  const ANON_KEY: string = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || FALLBACK_ANON_KEY;
+  const FN_URL = `${SUPABASE_URL}/functions/v1/submit-comment`;
+  const HEADERS: Record<string, string> = { apikey: ANON_KEY, Authorization: `Bearer ${ANON_KEY}` };
+  const form = document.getElementById("guestbook-form") as HTMLFormElement;
+  const nameInput = document.getElementById("guestbook-name") as HTMLInputElement;
+  const messageInput = document.getElementById("guestbook-message") as HTMLTextAreaElement;
+  const websiteInput = document.getElementById("guestbook-website") as HTMLInputElement;
+  const submitBtn = document.getElementById("guestbook-submit") as HTMLButtonElement;
+  const statusEl = document.getElementById("guestbook-status") as HTMLParagraphElement;
+  const listEl = document.getElementById("guestbook-list") as HTMLDivElement;
+  const replyingBox = document.getElementById("guestbook-replying") as HTMLDivElement;
+  const replyingName = document.getElementById("guestbook-replying-name") as HTMLSpanElement;
+  const replyCancel = document.getElementById("guestbook-reply-cancel") as HTMLButtonElement;
+  let replyTo: { id: string; name: string } | null = null;
+  function el<K extends keyof HTMLElementTagNameMap>(
+    tag: K,
+    cls?: string | null,
+    text?: string | null,
+  ): HTMLElementTagNameMap[K] {
+    const node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text != null) node.textContent = text;
+    return node;
+  }
+  function fmtDate(iso: string): string {
+    try {
+      return new Date(iso).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+    } catch {
+      return "";
+    }
+  }
+  function clearReply() {
+    replyTo = null;
+    replyingBox.classList.add("hidden");
+    replyingBox.classList.remove("flex");
+    replyingName.textContent = "";
+  }
+  replyCancel.addEventListener("click", clearReply);
+  function renderNote(note: GuestbookNote, depth: number): HTMLElement {
+    const card = el(
+      "article",
+      "flex flex-col gap-2 border border-white/10 rounded-sm p-4" + (depth > 0 ? " ml-6" : ""),
+    );
+    const head = el("div", "flex items-baseline justify-between gap-4");
+    head.append(
+      el("span", "font-medium text-[var(--text-main)] break-words min-w-0", note.name),
+      el("span", "text-xs text-[var(--text-muted)]/70 whitespace-nowrap shrink-0", fmtDate(note.created_at)),
+    );
+    card.append(head);
+    if (note.is_hidden) {
+      const body = el(
+        "p",
+        "hidden text-[var(--text-muted)] leading-relaxed whitespace-pre-wrap break-words",
+        note.message,
+      );
+      const btn = el(
+        "button",
+        "text-xs italic text-[var(--text-muted)]/70 hover:text-white transition-colors w-fit",
+        "hidden as possible spam; reveal?",
+      );
+      btn.type = "button";
+      btn.setAttribute("aria-expanded", "false");
+      btn.addEventListener("click", () => {
+        const isHidden = body.classList.toggle("hidden");
+        btn.textContent = isHidden ? "hidden as possible spam; reveal?" : "hide";
+        btn.setAttribute("aria-expanded", String(!isHidden));
+      });
+      card.append(body, btn);
+    } else {
+      card.append(
+        el("p", "text-[var(--text-muted)] leading-relaxed whitespace-pre-wrap break-words", note.message),
+      );
+    }
+    const reply = el("button", "text-xs text-[var(--text-muted)]/70 hover:text-white transition-colors w-fit", "reply");
+    reply.type = "button";
+    reply.addEventListener("click", () => {
+      replyTo = { id: note.id, name: note.name };
+      replyingName.textContent = note.name;
+      replyingBox.classList.remove("hidden");
+      replyingBox.classList.add("flex");
+      messageInput.focus();
+    });
+    card.append(reply);
+    return card;
+  }
+  function render(notes: GuestbookNote[]): void {
+    listEl.innerHTML = "";
+    if (notes.length === 0) {
+      listEl.append(el("p", "text-[var(--text-muted)]", "no notes yet. be the first!"));
+      return;
+    }
+    const ids = new Set(notes.map((n: GuestbookNote) => n.id));
+    const kids = new Map<string, GuestbookNote[]>();
+    const roots: GuestbookNote[] = [];
+    for (const n of notes) {
+      if (n.parent_id && ids.has(n.parent_id)) {
+        if (!kids.has(n.parent_id)) kids.set(n.parent_id, []);
+        (kids.get(n.parent_id) as GuestbookNote[]).push(n);
+      } else {
+        roots.push(n);
+      }
+    }
+    const walk = (note: GuestbookNote, depth: number): void => {
+      listEl.append(renderNote(note, depth));
+      for (const child of kids.get(note.id) ?? []) walk(child, depth + 1);
+    };
+    roots.forEach((note: GuestbookNote) => walk(note, 0));
+  }
+  async function load() {
+    listEl.innerHTML = "";
+    listEl.append(el("p", "text-[var(--text-muted)]", "loading notes…"));
+    try {
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/guestbook?select=id,name,message,parent_id,is_hidden,created_at&order=created_at.desc&limit=100`,
+        { headers: HEADERS },
+      );
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      render((await res.json()) as GuestbookNote[]);
+    } catch (err) {
+      console.error(err);
+      listEl.innerHTML = "";
+      listEl.append(el("p", "text-[var(--text-muted)]", "couldn't load notes. try again later."));
+    }
+  }
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const name = nameInput.value.trim();
+    const message = messageInput.value.trim();
+    const honeypot = websiteInput.value;
+    if (!name || !message) {
+      statusEl.textContent = "name and message can't be empty.";
+      return;
+    }
+    if (name.length > 60 || message.length > 2000) {
+      statusEl.textContent = "too long. name ≤ 60, message ≤ 2000.";
+      return;
+    }
+    submitBtn.disabled = true;
+    statusEl.textContent = "posting…";
+    try {
+      const res = await fetch(FN_URL, {
+        method: "POST",
+        headers: { ...HEADERS, "Content-Type": "application/json" },
+        body: JSON.stringify({ name, message, parent_id: replyTo ? replyTo.id : null, honeypot }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+      statusEl.textContent = data.hidden
+        ? "posted. possible spam?"
+        : "posted.";
+      messageInput.value = "";
+      clearReply();
+      await load();
+    } catch (err) {
+      console.error(err);
+      statusEl.textContent = err instanceof Error ? err.message : "couldn't post. try again later.";
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+  load();
+</script>

@@ -1,6 +1,7 @@
-/node_modules
-/.pnpm-store/
 /.astro/
 /dist/
-.DS_Store
+/exp/
+/node_modules/
+.env*
+/.pnpm-store/
 *.tsbuildinfo

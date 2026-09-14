@@ -30,7 +30,7 @@ The classifier is a simple TF-IDF over word pairs with a logistic curve. We also
 
 In internal testing we see 0.79 AUC on mixed prompts, 0.71 on real coding prompts, and 0.9 to 0.99 on the agentic suites.
 
-If you want to help us improve Auto mode, see the [community repo](https://github.com/KHROTU/arc-community).
+If you want to help us improve Auto mode, see the [community repo](https://github.com/khrotu/arc-community).
 
 [^1]: Every source in the aggregated prompt dataset, containing 6,127 unique prompts.
 
