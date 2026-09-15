@@ -4,7 +4,7 @@ date: '2026-05-29'
 slug: i-hate-new-design
 ---
 
-*This was transcribed with minimal fixes. Expect a lot of drunk talk and incoherent arguments, so feel free to laugh at me.*
+*This was transcribed with minimal fixes. Expect a lot of drunk talk and incoherent arguments, so don't take it seriously.*
 
 This is just completely unacceptable. I don't even know where to begin. Look at all the fucking UI changes recently — you know, Firefox Nova, Gmail, Google Drive. Like, what are we doing here? All of a sudden in 2026, everything is about having gradients and being 3D. Why are we doing this? Three years ago, every single motherfucking company — Google, Microsoft, Firefox — everyone changed from their cool 3D logos that actually meant something to flat ones. And sure, I've already accepted that. I've already accepted the fact that all of these companies decided, all of a sudden, that they're gonna pull out their dicks and hammer them flat. I have already accepted that over the course of these past few years. And now you're telling me in 2026 we're going back to fucking 3D logos? What the fuck are we doing? What the fuck is Firefox Nova? What the fuck are these new logos? They look like shit. They look awful. You gave me 3 years to get accustomed to the fact that you have a hammered, flat dick, and now you're telling me you took an air pump and you're gonna fucking inflate your dick again? Like, what are we doing here? What are we actually doing here? Can you not just stick to one thing?
 
