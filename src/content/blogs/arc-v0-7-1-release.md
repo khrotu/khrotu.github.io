@@ -8,17 +8,17 @@ Arc version 0.7.1, first released on September 4, 2026.
 
 ## Highlights
 
-### OpenCode Headers
+### OpenCode Session Header Support
 
-As OpenCode Go/Zen will require a custom session tracking header starting September 6th, we had to quickly make this update to ensure you can keep working without interruption. Normal updates are still roughly weekly.
+OpenCode Go/Zen requires a custom session tracking header starting September 6. This release sends the required header, so existing OpenCode configurations continue to work without interruption.
 
 ### Responses API Support
 
-Arc now officially supports OpenAI's Responses API; while previously some providers were able to convert requests of Responses-only models to Chat Completions, the official support ensures minimal errors.
+Arc now supports OpenAI's Responses API. Previous versions relied on provider-side conversion from Responses-only models to Chat Completions. Native support covers streaming content, reasoning, tools, images, cached-token usage, and format fallback.
 
 ### Cost-Aware Compaction
 
-Compaction now uses a new algorithm to estimate the most cost efficient time to compact, taking into account cache hit/miss pricing output pricing, session token usage, summary size, and the cost of losing context.
+Compaction now selects its boundary from cost instead of token count alone. The selection accounts for cache hit and miss pricing, output pricing, session token usage, summary size, and context-loss penalties.
 
 ## Changelog
 
@@ -43,9 +43,9 @@ Compaction now uses a new algorithm to estimate the most cost efficient time to 
 - Added OpenAI Responses API support with streaming content, reasoning, tools, images, cached-token usage, and format fallback.
 - Improved Anthropic tool-result handling and provider model metadata.
 - Added forced OpenRouter catalog refreshes.
-- Compaction now chooses its boundary using cache pricing, token estimates, summary size, and context-loss penalties instead of token count alone.
+- Compaction now selects its boundary from cache pricing, token estimates, summary size, and context-loss penalties instead of token count alone.
 - Compressed snapshots retain backward-compatible decoding, with increased limits for large histories.
-- Windows sandbox shells stay on native Win32 terminals instead of being routed through a compatibility shell.
-- Provider metadata, attribution headers, and model catalog entries were refreshed.
+- Windows sandbox shells now remain on native Win32 terminals instead of routing through a compatibility shell.
+- Provider metadata, attribution headers, and model catalog entries are now refreshed.
 - Updated OpenAI-compatible usage handling and transport metadata.
 - Added coverage for Responses API streaming, cost-aware compaction, catalog refresh, routing, agent reversion, edit validation, shell timeouts, attribution, and security hardening.

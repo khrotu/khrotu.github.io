@@ -10,29 +10,29 @@ Arc version 0.6.0, first released on August 5, 2026.
 
 ### Auto Mode (Beta)
 
-v0.6.0 brings the new Auto mode to Arc, which automatically routes prompts to the cheapest model that can handle the task. Relying on an in-house fine-tuned model, Auto mode makes sub-10ms decisions[^1] at 0.757 AUC[^2] based on internal testing. Crucially, Auto mode **isn't** limited to a specific set of models, and instead adapts to your configuration. [Learn more](/blogs/arc-auto-mode-beta).
+Auto mode routes each prompt to the lowest-cost configured model that meets the estimated difficulty. It uses an in-house fine-tuned difficulty model. Internal testing measured routing decisions under 10 ms at 0.757 AUC[^2][^1]. It supports any configured models instead of a fixed model list. [Learn more](/blogs/arc-auto-mode-beta).
 
 ### Prompt Polishing
 
-When enabled, Arc automatically polishes your prompts before sending them to the model, and can be configured to provide either grammar/spelling-only corrections or full prompt rewriting.
+When enabled, prompt polishing edits the prompt before it is sent to the model. It corrects grammar and spelling only, or rewrites the full prompt, depending on configuration. The polished prompt appears in the composer for approval before sending.
 
 ### Chat History Encryption
 
-Chat history is now stored in our own encrypted, compact ARCX binary format by default, providing better security and storage efficiency than JSON or SQLite.
+Chat history is now stored in the encrypted, compact ARCX binary format by default. Existing JSON history migrates to ARCX on first save, and the old JSON file is removed after migration.
 
 ## Changelog
 
 ### Chat
 
-- Auto mode is available from the model picker. During beta, the router shows you its routing option with accept/reject controls before sending the prompt, giving you the final decision.
-- Added prompt polishing. Polished prompts appear in the composer for approval before being sent.
-- You can now see the model used for subagents.
-- The stop button now stays visible whenever a task is running so you can cancel at any time.
-- The queue/steer send button is now a single accent-coloured split control, matching the main send button.
+- Auto mode is available from the model picker. During beta, the router shows its routing decision with accept and reject controls before sending. Sending requires confirmation.
+- Added prompt polishing. Polished prompts appear in the composer for approval before sending.
+- Subagent turns now show the model used.
+- The stop button remains visible while a task runs.
+- The queue and steer send control is now a single accent-colored split button, matching the main send button.
 
 ### Sidebar Chat
 
-- Added a collapsible plan bar above the composer, replacing the old to-do list UI.
+- Added a collapsible plan bar above the composer. It replaces the previous to-do list UI.
 
 ### Fullscreen Chat
 
@@ -40,28 +40,28 @@ Chat history is now stored in our own encrypted, compact ARCX binary format by d
 
 ### Settings
 
-- Added prompt polish settings, with `off`, `basic`, and `polish` modes.
-- Added Auto quality bias, letting you route toward cheaper or stronger models.
+- Added prompt polish settings with `off`, `basic`, and `polish` modes.
+- Added Auto quality bias to route toward lower-cost or higher-capability models.
 - Added notification sound settings.
 
 ### Backend
 
-- Pressing stop now always ends the current task. The busy state now reliably clears and you can send again, even if the agent got stuck mid-turn.
-- Tasks that get repeated provider errors now end with a clear error instead of retrying forever.
+- Pressing stop now ends the current task. The busy state clears reliably, and sending is available again even if the agent stopped mid-turn.
+- Tasks with repeated provider errors now end with an error instead of retrying without limit.
 - History compaction no longer splits tool-call chains across the compaction boundary.
-- Larger sessions no longer lose older tool steps from the transcript after a restart.
-- Post-edit LSP diagnostics and verification results are now part of the edit's own tool result instead of separate duplicate responses, fixing some provider errors and improving efficiency.
-- Reverting a checkpoint now reliably removes the later snapshots, even when they were created moments apart.
-- File tools now reject missing arguments with a clear error instead of writing the literal text `undefined` into files or searching for it.
-- Editing files with Windows line endings no longer corrupts nearby lines when the search text has to be matched loosely.
-- Added configurable per-session usage caps for `web.search`, `subagent.spawn`, and `mcp.call` tools.
-- Writes to config files (`.arc/`, `.vscode/`, `.cursor/`, `.claude/`, `AGENTS.md`, `CLAUDE.md`, `.arcrules*`) now always require approval, even with auto-approve on.
-- The agent now pauses and asks after repeated failing or identical tool calls instead of getting stuck.
-- Messages marked `noCompact` (like plan instructions) now survive history compaction.
-- Chat history automatically migrates to the encrypted ARCX format, cleaning up the old JSON file after the first save.
-- Added `pre.compact` hook event with a `block` decision, plus an `instructions.loaded` hook event.
-- Workspace conventions are now also picked up from `.cursorrules`, `.windsurfrules`, `.clinerules`, and `copilot-instructions.md`.
-- Added `${env:VAR}` interpolation support in MCP server configs.
+- Larger sessions retain older tool steps in the transcript after a restart.
+- Post-edit LSP diagnostics and verification results are now included in the edit tool result instead of separate responses.
+- Reverting a checkpoint now removes later snapshots, including snapshots created moments apart.
+- File tools reject missing arguments with an error instead of writing or searching for the literal text `undefined`.
+- Edits with loose matching on files with Windows line endings no longer corrupt nearby lines.
+- Added per-session usage caps for `web.search`, `subagent.spawn`, and `mcp.call`.
+- Writes to configuration files (`.arc/`, `.vscode/`, `.cursor/`, `.claude/`, `AGENTS.md`, `CLAUDE.md`, `.arcrules*`) now require approval, even with auto-approve enabled.
+- The agent now pauses and requests input after repeated failing or identical tool calls instead of continuing.
+- Messages marked `noCompact`, such as plan instructions, are retained through history compaction.
+- Chat history migrates to the encrypted ARCX format automatically, and removes the old JSON file after the first save.
+- Added the `pre.compact` hook event with a `block` decision, and the `instructions.loaded` hook event.
+- Workspace conventions are now read from `.cursorrules`, `.windsurfrules`, `.clinerules`, and `copilot-instructions.md` in addition to existing sources.
+- Added `${env:VAR}` interpolation in MCP server configurations.
 
 [^1]: Performance
 

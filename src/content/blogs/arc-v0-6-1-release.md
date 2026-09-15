@@ -8,30 +8,30 @@ Arc version 0.6.1, first released on August 12, 2026.
 
 ## Highlights
 
-### Settings Overhaul
+### Settings Reorganization
 
-Settings have been reorganized into more granular tabs, so you can find what you need more easily. The new Tools tab lets you disable specific tools, saving tokens on requests.
+Settings are now organized into additional, more specific tabs. The new Tools tab disables specific tools by category or by individual tool. Disabled tools are omitted from model tool definitions, which reduces tokens per request.
 
 ### Clickable File References
 
-References in chat now render as clickable chips. Clicking `path:line` or `path:start-end` opens the file and selects the exact range.
+File references in chat now render as clickable chips. Selecting a `path:line` or `path:start-end` reference opens the file and selects the specified range.
 
 ### Reversible Context Compression
 
-Oversized tool outputs are now compressed before they're stored in history, and can be pulled back in full on demand. Long sessions stay usable without losing anything.
+Oversized tool outputs are now compressed before storage in history. The full output remains available on demand through retrieval. Compressed history reduces context size while preserving access to the original content.
 
 ## Changelog
 
 ### Chat
 
-- File references now render as clickable chips that link to the source.
-- File-edit diffs stream live in the chat as they're applied.
-- Compaction now shows a standalone "Compacted N messages" summary row instead of disappearing silently.
-- Fixed chat-cost inflation that grew with history; costs and context percentage now hydrate correctly on open.
+- File references now render as clickable chips that link to the source range.
+- File-edit diffs now stream live in the chat as they are applied.
+- Compaction now shows a standalone "Compacted N messages" summary row.
+- Chat-cost inflation with history length is fixed. Costs and context percentage now hydrate correctly on open.
 
 ### Sidebar Chat
 
-- Made the chat list more compact.
+- The chat list is now more compact.
 
 ### Fullscreen Chat
 
@@ -39,17 +39,17 @@ Oversized tool outputs are now compressed before they're stored in history, and 
 
 ### Settings
 
-- Settings reorganized into more tabs.
-- Added a Tools tab with category and individual tool checkboxes; disabled tools are omitted from model tool definitions.
+- Settings are now organized into additional tabs.
+- Added a Tools tab with category and individual tool checkboxes. Disabled tools are omitted from model tool definitions.
 - Added settings UI for reasoning effort, shell approval, and sandbox profile.
 - Added `arc.diffView.autoOpen` to auto-open and stream file-edit diffs in the main window.
 
 ### Backend
 
-- Oversized tool outputs (JSON, logs, text) are compressed before history and restored on demand via `context.retrieve`.
-- Added `memory.note` and automatic per-workspace notes, written to `~/.arc` NOTES.md and injected into future sessions.
+- Oversized tool outputs (JSON, logs, text) are now compressed before history storage and restored on demand through `context.retrieve`.
+- Added `memory.note` and automatic per-workspace notes. Notes are written to `NOTES.md` in `~/.arc` and injected into future sessions.
 - Added polling-free wait tools (`wait.for`, `wait.until`, `wait.forProcess`, `wait.forCommand`) with abort support.
-- Subagents now inherit the parent's approval config, so steering no longer triggers repeated approval prompts.
-- `trackToolMistakes` now only trips when the identical tool call fails three times in a row.
-- Approval dialogs now show readable summaries for every tool.
-- Provider catalog expanded from 150+ to 262+ providers.
+- Subagents now inherit the parent approval configuration. Steering no longer triggers repeated approval prompts.
+- `trackToolMistakes` now triggers only after the identical tool call fails three times consecutively.
+- Approval dialogs now show readable summaries for each tool.
+- The provider catalog expanded from 150+ to 262+ providers.
