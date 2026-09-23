@@ -76,5 +76,4 @@ Context compression now handles searches, diffs, data, logs, and repeated conten
 - Provider capability failures expire after a fixed time. Model caches use the provider and API-key hash. Retries cover transient transport errors, and tool names use an escape-aware encoding.
 - MCP sampling has a per-server hourly limit. Chat snapshots use per-message framing, recover from corrupt frames, limit decompression, and remain backward-compatible.
 - Session generations discard stale broadcasts. Corrupt ARCX files are quarantined. Requirements locks are downloaded with hash verification. Terminal generations prevent stale integrated terminals from accepting output.
-- The build now uses production CSS, guarded Terser runs, deterministic VSIX selection, dependency stripping, stricter packaging cleanup, and Node 20 metadata. The efficiency table was updated for September 13, 2026.
 - Added tests for compression, symbol context, parallel tool execution, checkpoint objects, search truncation, security nonces, attribution, routing variants, corrupt chat frames, and the other hardening changes.
