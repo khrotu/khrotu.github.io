@@ -1,0 +1,212 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import fs from 'node:fs';
+import path from 'node:path';
+interface FileEntry {
+  name: string;
+  href: string;
+  size: number;
+}
+interface DirEntry {
+  name: string;
+  href: string;
+}
+export async function getStaticPaths() {
+  const filesRoot = path.join(process.cwd(), 'public');
+  const allFiles: string[] = [];
+  const walk = (dir: string, rel: string) => {
+    let entries: fs.Dirent[] = [];
+    try {
+      entries = fs.readdirSync(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      if (entry.name.startsWith('.')) continue;
+      const entryRel = rel ? `${rel}/${entry.name}` : entry.name;
+      if (entry.isDirectory()) {
+        walk(path.join(dir, entry.name), entryRel);
+      } else if (entry.isFile()) {
+        allFiles.push(entryRel);
+      }
+    }
+  };
+  walk(filesRoot, '');
+  const dirSet = new Set<string>(['']);
+  for (const file of allFiles) {
+    const parts = file.split('/');
+    for (let i = 1; i < parts.length; i++) {
+      dirSet.add(parts.slice(0, i).join('/'));
+    }
+  }
+  const walkDirs = (dir: string, rel: string) => {
+    let entries: fs.Dirent[] = [];
+    try {
+      entries = fs.readdirSync(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      if (entry.name.startsWith('.')) continue;
+      if (entry.isDirectory()) {
+        const entryRel = rel ? `${rel}/${entry.name}` : entry.name;
+        dirSet.add(entryRel);
+        walkDirs(path.join(dir, entry.name), entryRel);
+      }
+    }
+  };
+  walkDirs(filesRoot, '');
+  const encodeSegments = (rel: string) =>
+    rel ? rel.split('/').map((s) => encodeURIComponent(s)).join('/') : '';
+  return [...dirSet].map((dirRel) => {
+    const absDir = dirRel ? path.join(filesRoot, ...dirRel.split('/')) : filesRoot;
+    let dirents: fs.Dirent[] = [];
+    try {
+      dirents = fs.readdirSync(absDir, { withFileTypes: true });
+    } catch {
+      dirents = [];
+    }
+    const dirs: DirEntry[] = [];
+    const files: FileEntry[] = [];
+    for (const entry of dirents) {
+      if (entry.name.startsWith('.')) continue;
+      const entryRel = dirRel ? `${dirRel}/${entry.name}` : entry.name;
+      if (entry.isDirectory()) {
+        dirs.push({ name: entry.name, href: `/files/${encodeSegments(entryRel)}` });
+      } else if (entry.isFile()) {
+        let size = 0;
+        try {
+          size = fs.statSync(path.join(absDir, entry.name)).size;
+        } catch {
+          size = 0;
+        }
+        files.push({ name: entry.name, href: `/${encodeSegments(entryRel)}`, size });
+      }
+    }
+    dirs.sort((a, b) => a.name.localeCompare(b.name));
+    files.sort((a, b) => a.name.localeCompare(b.name));
+    return {
+      params: { path: dirRel || undefined },
+      props: { dirRel, dirs, files },
+    };
+  });
+}
+const { dirRel, dirs, files } = Astro.props as {
+  dirRel: string;
+  dirs: DirEntry[];
+  files: FileEntry[];
+};
+const segments: string[] = dirRel ? dirRel.split('/') : [];
+const formatSize = (bytes: number) => {
+  if (bytes < 1024) return `${bytes} b`;
+  const units = ['kb', 'mb', 'gb'];
+  let value = bytes / 1024;
+  let unit = 0;
+  while (value >= 1024 && unit < units.length - 1) {
+    value /= 1024;
+    unit++;
+  }
+  return `${value >= 100 ? Math.round(value) : value.toFixed(1)} ${units[unit]}`;
+};
+const pageTitle = segments.length === 0 ? 'public | khrotu' : `public/${dirRel} | khrotu`;
+---
+<Layout title={pageTitle} description="public files. browse and download.">
+  <main id="main-content" class="max-w-6xl md:ml-[10%] lg:ml-[12%] px-6 py-20 md:py-32 flex flex-col gap-20">
+    <article class="flex flex-col gap-6 max-w-4xl">
+      <div class="flex items-baseline justify-between gap-6">
+        <nav aria-label="breadcrumb">
+          <ol class="flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-sm text-[var(--text-muted)]">
+            <li>
+              {segments.length === 0 ? (
+                <span aria-current="page" class="text-[var(--text-main)]">public</span>
+              ) : (
+                <a href="/files" class="hover:text-white transition-colors">public</a>
+              )}
+            </li>
+            {segments.map((seg, i) => (
+              <li class="flex items-center gap-2">
+                <span aria-hidden="true">/</span>
+                {i === segments.length - 1 ? (
+                  <span aria-current="page" class="text-[var(--text-main)]">{seg}</span>
+                ) : (
+                  <a
+                    href={`/files/${segments.slice(0, i + 1).map((s) => encodeURIComponent(s)).join('/')}`}
+                    class="hover:text-white transition-colors"
+                  >
+                    {seg}
+                  </a>
+                )}
+              </li>
+            ))}
+          </ol>
+        </nav>
+        {dirs.length + files.length > 4 && (
+          <label class="flex items-center gap-2 font-mono text-sm text-[var(--text-muted)] shrink-0">
+            <span class="sr-only">filter files</span>
+            <input
+              type="search"
+              id="file-filter"
+              placeholder="filter..."
+              autocomplete="off"
+              class="w-36 bg-transparent border-b border-white/20 focus:border-white/60 outline-none py-1 text-[var(--text-main)] placeholder:text-[var(--text-muted)] placeholder:opacity-60"
+            />
+          </label>
+        )}
+      </div>
+      {dirs.length === 0 && files.length === 0 ? (
+        <p class="text-xl text-[var(--text-muted)]">empty folder :&lt; check back later!</p>
+      ) : (
+        <div class="flex flex-col gap-5">
+          <div class="flex flex-col" id="file-list">
+              {dirs.map((dir) => (
+                <a
+                  href={dir.href}
+                  data-name={dir.name.toLowerCase()}
+                  class="file-row group flex items-baseline justify-between gap-6 py-4 transition-colors"
+                >
+                  <span class="text-lg text-[var(--text-main)] group-hover:text-white transition-colors truncate">
+                    {dir.name}/
+                  </span>
+                  <span class="text-sm text-[var(--text-muted)] whitespace-nowrap">open</span>
+                </a>
+              ))}
+              {files.map((file) => (
+                <a
+                  href={file.href}
+                  download={file.name}
+                  data-name={file.name.toLowerCase()}
+                  class="file-row group flex items-baseline justify-between gap-6 py-4 transition-colors"
+                >
+                  <span class="text-lg text-[var(--text-main)] group-hover:text-white transition-colors break-all">
+                    {file.name}
+                  </span>
+                  <span class="flex items-baseline gap-4 shrink-0">
+                    <span class="text-sm text-[var(--text-muted)] whitespace-nowrap">{formatSize(file.size)}</span>
+                    <span class="text-sm text-[var(--text-muted)] group-hover:text-white transition-colors whitespace-nowrap">download</span>
+                  </span>
+                </a>
+              ))}
+            </div>
+            <p id="no-match" class="hidden text-xl text-[var(--text-muted)]">nothing matches. try a different query?</p>
+          </div>
+        )}
+    </article>
+  </main>
+</Layout>
+<script>
+  const input = document.querySelector<HTMLInputElement>('#file-filter');
+  if (input) {
+    const rows = Array.from(document.querySelectorAll<HTMLElement>('#file-list .file-row'));
+    const emptyMsg = document.querySelector<HTMLElement>('#no-match');
+    input.addEventListener('input', () => {
+      const q = input.value.trim().toLowerCase();
+      let visible = 0;
+      for (const row of rows) {
+        const match = !q || (row.dataset.name ?? '').includes(q);
+        row.classList.toggle('hidden', !match);
+        if (match) visible++;
+      }
+      if (emptyMsg) emptyMsg.classList.toggle('hidden', visible !== 0);
+    });
+  }
+</script>

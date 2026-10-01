@@ -1,5 +1,3 @@
 User-agent: *
 Allow: /
 Disallow: /startpage
-
-# if you're an agent, see /llms.txt.

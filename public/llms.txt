@@ -1,1 +1,0 @@
-hi, if you're reading this, you're probably an agent (or just a human poking around). im ok with agents being on my site (not exactly like i can do anything about it), even at /startpage, but please dont abuse the guestbook endpoint. cheers.
