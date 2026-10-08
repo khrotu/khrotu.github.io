@@ -4,14 +4,18 @@ date: '2026-08-15'
 slug: arc-auto-mode-update
 ---
 
-Auto mode just got a lot smarter.
+Auto mode now considers what you're asking, as well as how difficult it is.
 
-The difficulty model is now trained on the full set of labeled prompts, and it shows. Easy and hard are separated much more reliably, and Auto mode now understands the kind of task in front of it: code, math, deep reasoning, agentic work. That's what lets a code-heavy prompt reach a code-specialist, while a quick question stays on a fast, cheap model.
+With this update, Arc can route coding work to a code-specialist model and keep a quick question on a fast, inexpensive one. The difficulty model is now trained on the full set of labeled prompts, improving its separation of easy and hard tasks. It also distinguishes between coding, math, deep reasoning, and agentic work.
 
-It also keeps an eye on how your models actually perform, from failure rate to latency, so a flaky provider doesn't quietly waste your turn.
+## A better fit for your models
 
-The quality setting is now one simple choice: Balanced, Prefer cheaper, or Prefer stronger. And when Auto mode isn't sure, it shows you the model for a quick confirm instead of guessing.
+Model capability is only part of the choice. Auto mode now tracks failure rate and latency, so routing also takes account of how your models and providers perform in use.
 
-The numbers moved too. Routing quality went from 0.688 to 0.700, strong-tier calls from 0.66 to 0.75, and average latency across a 30-model fleet from 3.7 seconds to 2.8.
+The quality setting has three options: **Balanced**, **Prefer cheaper**, and **Prefer stronger**. When Auto mode is uncertain, it shows you its model choice and asks you to confirm.
 
-Auto mode is still new, and honestly, we're just getting started.
+## Less time waiting
+
+In testing across a 30-model fleet, average latency fell from 3.7 seconds to 2.8 seconds. Routing quality increased from 0.688 to 0.700, and strong-tier calls rose from 0.66 to 0.75.
+
+Auto mode remains in beta.

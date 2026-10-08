@@ -8,29 +8,31 @@ slug: arc-auto-mode-beta
 
 Today, we're introducing Auto mode in beta.
 
+Choosing a model shouldn't interrupt your work. With Auto mode, you write the prompt. Arc estimates how much capability it needs and selects the lowest-cost model it expects can handle it.
+
 ## Highlights
 
-Arc now looks at the prompt in front of you, estimates how difficult it is, and routes it to the cheapest model that gets the job done.
+### Model choice, built in
 
-The result is a more practical model choice: faster on routine prompts, more deliberate on difficult ones, and it adapts to any set of models.
+A quick question can go to a fast, inexpensive model. A difficult task can go to a more capable one. Auto mode works with whichever models you have available, so you don't need to choose a fixed lineup to use it.
 
-You can also adjust the quality setting to route toward stronger or cheaper models, depending on your need.
+The quality setting lets you adjust that choice. Raise it to favor more capable models, or lower it to favor cost.
 
-It's still in beta. Routing is strong on the prompts we've tuned for, and less consistent outside that range. We'll keep improving it from here.
+Auto mode is still in beta. It performs best on the kinds of prompts we've tuned it for; routing is less consistent on unfamiliar tasks.
 
 ## Methodology
 
-We trained a small model that answers a simple question: how hard is this prompt?
+Auto mode starts with a small model trained to estimate prompt difficulty.
 
-To get the labels, we ran current models at four capability levels, scores 14, 34, 51, and 57 on the intelligence index, against a large number of prompts made up of real coding sessions and various benchmarks[^1]. Every model answered inside Arc's own environment with the same system prompt and tools used in production, so difficulty is measured the way it's actually used.
+To train it, we tested models at four capability levels, scoring 14, 34, 51, and 57 on the intelligence index. The dataset contains 6,127 unique prompts from real coding sessions and benchmarks[^1]. Each model used Arc's production system prompt and tools. That lets us measure difficulty in the environment where Auto mode will make its choices.
 
-Grading was the hard part. Where we could run the task for real, like the agentic banking and telecom suites, we let the agent work through the whole thing for up to eight turns with tools executing against the real environment, then replayed the trajectory and graded it against database checks and natural-language assertions. Everywhere else, we use an LLM-as-a-judge approach to grade responses.
+For the agentic banking and telecom suites, we ran each task for up to eight turns, with tools executing in the task environment. We then replayed the run and checked the results against database checks and natural-language assertions. For the remaining tasks, we used an LLM judge to grade the responses.
 
-The classifier is a simple TF-IDF over word pairs with a logistic curve. We also experimented with fancier models, including MiniLM fine-tunes and a three-fold ensemble, and they all landed within 0.01 AUC of the simple one, so we went with the simplest and fastest option.
+The classifier uses TF-IDF word-pair features with a logistic curve. We also tested fine-tuned MiniLM models and a three-fold ensemble. Their results were all within 0.01 AUC of the simpler classifier, so we chose the faster, simpler model.
 
-In internal testing we see 0.79 AUC on mixed prompts, 0.71 on real coding prompts, and 0.9 to 0.99 on the agentic suites.
+In internal testing, the classifier achieved 0.79 AUC on mixed prompts, 0.71 on real coding prompts, and 0.9 to 0.99 on the agentic suites.
 
-If you want to help us improve Auto mode, see the [community repo](https://github.com/khrotu/arc-community).
+You can help shape the beta through the [community repo](https://github.com/khrotu/arc-community).
 
 [^1]: Every source in the aggregated prompt dataset, containing 6,127 unique prompts.
 
