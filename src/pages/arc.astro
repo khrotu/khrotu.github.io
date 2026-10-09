@@ -1,0 +1,568 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+<Layout
+  title="Arc | khrotu"
+  description="The 0.27 MB provider-agnostic agentic harness."
+  favicon="/arc/arc-logo-mono.svg"
+>
+  <link rel="preload" href="/arc/arc-logo-mono-text.svg" as="image" type="image/svg+xml" slot="head" />
+  <meta property="og:image" content="/arc/arc-og.png" slot="head" />
+  <h1 class="sr-only">Arc | khrotu</h1>
+  <main id="main-content" class="arc-stage" data-about="closed" aria-label="Arc overview">
+    <canvas id="arc-shader" class="arc-canvas" aria-hidden="true"></canvas>
+    <div class="arc-fallback" aria-hidden="true"></div>
+    <div class="arc-veil" aria-hidden="true"></div>
+    <div class="arc-hero">
+      <button id="arc-logo-btn" class="arc-logo-btn" type="button" aria-label="About Arc">
+        <img
+          src="/arc/arc-logo-mono-text.svg"
+          alt="Arc"
+          width="947"
+          height="260"
+          fetchpriority="high"
+          decoding="async"
+          draggable="false"
+          class="arc-logo"
+        />
+      </button>
+      <div id="arc-desc" class="arc-desc" aria-hidden="true" inert>
+        <div class="arc-desc-inner">
+          <div class="arc-scroll" tabindex="0" role="region" aria-label="About Arc details" data-edges="end">
+          <p class="arc-body">
+            Arc is an agentic harness for VS Code. At 0.27 MB, Arc is one of the
+            lightest harnesses available, but is still incredibly powerful. Size matters!
+          </p>
+          <p class="arc-body">
+            Harnesses love overwhelming you with as many providers and models as possible.
+            In reality, most engineers only daily-drive a few models: the real issue isn't
+            having too few providers or models to choose from; it's that those few models
+            are usually backed by multiple providers, forcing you to manually switch between
+            them and manage credits across each provider. Arc lets you configure multiple
+            providers under a single model alias and multiple keys for each provider. Just
+            choose a model, and Arc handles load balancing, rate limits, and key rotation.
+          </p>
+          <p class="arc-body">
+            Accidentally used an expensive model for a simple task and overspent? Arc can
+            automatically route your prompt to the cheapest, sufficiently powerful model with
+            Auto Mode, an in-house, on-device router that works with any model. Read more
+            about Auto Mode <a href="https://khrotu.org/blogs/arc-auto-mode-update-2/" target="_blank" rel="noopener noreferrer">here</a>.
+          </p>
+          <p class="arc-body">
+            We care about your security. Arc protects you from prompt injections, secret
+            exposure, and modifications to sensitive files, while providing shell sandboxing
+            on all OSes, HMAC-SHA-256 audit logs, and encrypted user data stored in Arc's own
+            <code>ARCX</code> format. We also provide an easy and transparent way for you
+            to delete all of your data.
+          </p>
+          <p class="arc-body">
+            Coming from Cline, Kilo Code, OpenCode, ZCode, or Continue? Histories and
+            keys can be imported in one click.
+          </p>
+          <p class="arc-body arc-dim">
+            MiMo-V2.6-Pro, a frontier open-weights model, is currently free inside Arc
+            for a limited time!
+          </p>
+          </div>
+          <div class="arc-meta">
+            <a href="https://github.com/khrotu/arc?tab=Apache-2.0-1-ov-file" target="_blank" rel="noopener noreferrer">Apache-2.0</a>
+            <span class="arc-meta-links">
+              <a href="https://marketplace.visualstudio.com/items?itemName=khrotu.arc-code" target="_blank" rel="noopener noreferrer">Marketplace</a>
+              <a href="https://github.com/khrotu/arc?tab=readme-ov-file" target="_blank" rel="noopener noreferrer">Docs</a>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <nav class="arc-corners" aria-label="Arc links">
+      <a class="arc-link" href="https://github.com/khrotu/arc" target="_blank" rel="noopener noreferrer">GitHub</a>
+      <button id="arc-about-btn" class="arc-link" type="button" aria-expanded="false" aria-controls="arc-desc">About</button>
+    </nav>
+  </main>
+  <style>
+    .arc-stage {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      background: #040404;
+      color: rgba(255, 255, 255, 0.87);
+    }
+    .arc-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    .arc-fallback {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(60% 50% at 25% 30%, rgba(10, 40, 80, 0.8), transparent 70%),
+        radial-gradient(55% 50% at 75% 25%, rgba(0, 127, 212, 0.28), transparent 70%),
+        repeating-linear-gradient(115deg, rgba(76, 194, 255, 0.06) 0 2px, transparent 2px 16px),
+        repeating-linear-gradient(65deg, rgba(44, 122, 123, 0.08) 0 2px, transparent 2px 20px),
+        #040404;
+    }
+    .arc-canvas + .arc-fallback {
+      display: none;
+    }
+    .arc-canvas[data-failed] {
+      display: none;
+    }
+    .arc-canvas[data-failed] + .arc-fallback {
+      display: block;
+    }
+    .arc-veil {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(72% 62% at 50% 46%, rgba(0, 0, 0, 0.10) 0%, rgba(0, 0, 0, 0.36) 68%, rgba(0, 0, 0, 0.60) 100%),
+        linear-gradient(to top, rgba(0, 0, 0, 0.40), transparent 26%, transparent 72%, rgba(0, 0, 0, 0.28));
+    }
+    .arc-hero {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: min(648px, 76vw);
+      margin-inline: auto;
+      padding: 24px;
+      transition: transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+    .arc-stage[data-about="open"] .arc-hero {
+      transform: translateY(-5vh);
+    }
+    .arc-logo-btn {
+      background: none;
+      border: 0;
+      padding: 0;
+      width: min(100%, 648px);
+      margin-inline: auto;
+      cursor: pointer;
+      transition: width 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+    .arc-stage[data-about="open"] .arc-logo-btn {
+      width: min(400px, 64vw);
+    }
+    .arc-logo-btn:focus-visible {
+      outline: 2px solid rgba(255, 255, 255, 0.75);
+      outline-offset: 6px;
+    }
+    .arc-logo {
+      display: block;
+      width: 100%;
+      height: auto;
+      user-select: none;
+      -webkit-user-select: none;
+      filter: drop-shadow(0 10px 44px rgba(0, 0, 0, 0.6));
+      animation: arc-rise 1s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    }
+    @keyframes arc-rise {
+      from {
+        opacity: 0;
+        transform: translateY(14px) scale(0.985);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+    .arc-desc {
+      display: grid;
+      grid-template-rows: 0fr;
+      opacity: 0;
+      transform: translateY(10px);
+      visibility: hidden;
+      width: min(400px, 64vw);
+      margin-inline: auto;
+      transition:
+        grid-template-rows 0.45s cubic-bezier(0.2, 0.7, 0.2, 1),
+        opacity 0.3s ease,
+        transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1),
+        visibility 0s linear 0.45s;
+    }
+    .arc-stage[data-about="open"] .arc-desc {
+      grid-template-rows: 1fr;
+      opacity: 1;
+      transform: none;
+      visibility: visible;
+      transition:
+        grid-template-rows 0.45s cubic-bezier(0.2, 0.7, 0.2, 1),
+        opacity 0.4s ease 0.22s,
+        transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) 0.05s,
+        visibility 0s;
+    }
+    .arc-desc-inner {
+      overflow: hidden;
+      min-height: 0;
+      padding-top: 26px;
+    }
+    .arc-scroll {
+      overflow-y: auto;
+      scrollbar-width: none;
+      max-height: min(38svh, 300px);
+    }
+    .arc-scroll::-webkit-scrollbar {
+      display: none;
+    }
+    .arc-scroll[data-edges="end"] {
+      -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 44px), transparent);
+      mask-image: linear-gradient(to bottom, #000 calc(100% - 44px), transparent);
+    }
+    .arc-scroll[data-edges="start"] {
+      -webkit-mask-image: linear-gradient(to bottom, transparent, #000 44px);
+      mask-image: linear-gradient(to bottom, transparent, #000 44px);
+    }
+    .arc-scroll[data-edges="both"] {
+      -webkit-mask-image: linear-gradient(to bottom, transparent, #000 44px, #000 calc(100% - 44px), transparent);
+      mask-image: linear-gradient(to bottom, transparent, #000 44px, #000 calc(100% - 44px), transparent);
+    }
+    .arc-body {
+      font-size: 16px;
+      line-height: 1.7;
+      color: rgba(255, 255, 255, 0.78);
+      margin: 0 0 12px;
+    }
+    .arc-dim {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.52);
+    }
+    .arc-body a {
+      color: rgba(255, 255, 255, 0.85);
+      text-decoration: underline;
+      text-underline-offset: 4px;
+      text-decoration-color: rgba(255, 255, 255, 0.35);
+    }
+    .arc-body a:hover {
+      color: #fff;
+    }
+    .arc-body code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.88em;
+      color: rgba(255, 255, 255, 0.88);
+    }
+    .arc-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.12);
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.5);
+    }
+    .arc-meta-links {
+      display: flex;
+      gap: 18px;
+    }
+    .arc-meta a {
+      color: rgba(255, 255, 255, 0.66);
+      text-decoration: underline;
+      text-underline-offset: 4px;
+      text-decoration-color: rgba(255, 255, 255, 0.25);
+    }
+    .arc-meta a:hover {
+      color: #fff;
+    }
+    .arc-corners {
+      position: absolute;
+      inset: auto 0 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding:
+        max(22px, env(safe-area-inset-bottom))
+        max(24px, env(safe-area-inset-right))
+        max(22px, env(safe-area-inset-bottom))
+        max(24px, env(safe-area-inset-left));
+    }
+    .arc-link {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 13px;
+      letter-spacing: 0.02em;
+      color: rgba(255, 255, 255, 0.6);
+      background: none;
+      border: 0;
+      padding: 8px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+    a.arc-link {
+      display: inline-block;
+    }
+    .arc-link:hover {
+      color: #fff;
+      text-decoration: underline;
+      text-underline-offset: 6px;
+    }
+    .arc-link:focus-visible {
+      outline: 2px solid rgba(255, 255, 255, 0.75);
+      outline-offset: 4px;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .arc-logo {
+        animation: none;
+      }
+      .arc-hero,
+      .arc-desc,
+      .arc-logo-btn,
+      .arc-link {
+        transition-duration: 0.01ms;
+      }
+    }
+  </style>
+  <script is:inline>
+    (() => {
+      const stage = document.getElementById('main-content');
+      const aboutBtn = document.getElementById('arc-about-btn');
+      const logoBtn = document.getElementById('arc-logo-btn');
+      const desc = document.getElementById('arc-desc');
+      const scroller = desc.querySelector('.arc-scroll');
+      const paintEdges = () => {
+        const top = scroller.scrollTop <= 4;
+        const end = scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 4;
+        scroller.dataset.edges = top ? (end ? 'none' : 'end') : (end ? 'start' : 'both');
+      };
+      const setAbout = (open) => {
+        stage.dataset.about = open ? 'open' : 'closed';
+        aboutBtn.textContent = open ? 'Back' : 'About';
+        aboutBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        desc.setAttribute('aria-hidden', open ? 'false' : 'true');
+        desc.inert = !open;
+        if (open) window.setTimeout(paintEdges, 500);
+      };
+      const isOpen = () => stage.dataset.about === 'open';
+      aboutBtn.addEventListener('click', () => setAbout(!isOpen()));
+      logoBtn.addEventListener('click', () => setAbout(!isOpen()));
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && isOpen()) setAbout(false);
+      });
+      scroller.addEventListener('scroll', paintEdges, { passive: true });
+      window.addEventListener('resize', paintEdges, { passive: true });
+      desc.inert = true;
+      const canvas = document.getElementById('arc-shader');
+      if (!canvas) return;
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const VERT = `#version 300 es
+        layout(location=0) in vec2 a_pos;
+        out vec2 v_uv;
+        void main() {
+          v_uv = a_pos * 0.5 + 0.5;
+          gl_Position = vec4(a_pos, 0.0, 1.0);
+        }`;
+      const FRAG = `#version 300 es
+        precision highp float;
+        uniform float u_time;
+        uniform vec2 u_resolution;
+        in vec2 v_uv;
+        out vec4 fragColor;
+        float hash21(vec2 p) {
+          p = fract(p * vec2(0.3183099, 0.3678794)) + 0.1;
+          p += dot(p, p + 19.19);
+          return fract(p.x * p.y);
+        }
+        float vnoise(vec2 st) {
+          vec2 i = floor(st);
+          vec2 f = fract(st);
+          float a = hash21(i);
+          float b = hash21(i + vec2(1.0, 0.0));
+          float c = hash21(i + vec2(0.0, 1.0));
+          float d = hash21(i + vec2(1.0, 1.0));
+          vec2 u = f * f * (3.0 - 2.0 * f);
+          float x1 = mix(a, b, u.x);
+          float x2 = mix(c, d, u.x);
+          return mix(x1, x2, u.y);
+        }
+        float fbm(vec2 p) {
+          float v = 0.0;
+          float a = 0.5;
+          for (int i = 0; i < 2; i++) {
+            v += a * vnoise(p);
+            p = p * 2.11 + vec2(17.3, 9.1);
+            a *= 0.5;
+          }
+          return v;
+        }
+        void main() {
+          vec2 p = v_uv - 0.5;
+          p.x *= u_resolution.x / u_resolution.y;
+          float t = u_time;
+        float w1 = fbm(p * 1.1 + vec2(t * 0.030, t * 0.015));
+        float w2 = fbm(p * 1.1 + vec2(4.7, 1.3) - vec2(t * 0.021, t * 0.010));
+        vec2 q = vec2(w1, w2);
+        float f = fbm(p * 1.4 + 1.1 * q);
+        float streak = (p.x * 2.6 - p.y * 3.4) + (q.x - q.y) * 2.0 + f * 2.4;
+        float line1 = pow(1.0 - abs(sin(streak + t * 0.05)), 6.0);
+        float line2 = pow(1.0 - abs(sin(streak * 0.45 - p.y * 1.1 - t * 0.035)), 10.0);
+          vec3 deep = vec3(0.030, 0.040, 0.060);
+          vec3 navy = vec3(0.045, 0.110, 0.250);
+          vec3 azure = vec3(0.000, 0.498, 0.831);
+          vec3 ice = vec3(0.300, 0.760, 1.000);
+          vec3 teal = vec3(0.173, 0.478, 0.482);
+        float field = q.x * 0.6 + q.y * 0.4;
+        vec3 col = deep;
+        col = mix(col, navy, smoothstep(0.25, 0.85, field) * 0.9);
+        col = mix(col, teal, smoothstep(0.55, 0.95, f) * 0.30);
+        col += line1 * ice * 0.22;
+        col += line2 * azure * 0.14;
+          vec2 vg = (v_uv - 0.5) * vec2(1.2, 1.0);
+          col *= clamp(1.0 - 0.55 * pow(length(vg) * 1.5, 2.0), 0.0, 1.0);
+          col += (fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453) - 0.5) / 255.0;
+          fragColor = vec4(col, 1.0);
+        }`;
+      let gl = null;
+      try {
+        gl = canvas.getContext('webgl2', {
+          antialias: false,
+          alpha: false,
+          depth: false,
+          stencil: false,
+          powerPreference: 'low-power',
+          preserveDrawingBuffer: false,
+          desynchronized: true,
+        });
+      } catch (err) {
+        gl = null;
+      }
+      if (!gl) {
+        canvas.setAttribute('data-failed', '');
+        return;
+      }
+      const compile = (type, src) => {
+        const shader = gl.createShader(type);
+        if (!shader) return null;
+        gl.shaderSource(shader, src);
+        gl.compileShader(shader);
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+          gl.deleteShader(shader);
+          return null;
+        }
+        return shader;
+      };
+      const vs = compile(gl.VERTEX_SHADER, VERT);
+      const fs = compile(gl.FRAGMENT_SHADER, FRAG);
+      if (!vs || !fs) {
+        canvas.setAttribute('data-failed', '');
+        return;
+      }
+      const prog = gl.createProgram();
+      if (!prog) {
+        canvas.setAttribute('data-failed', '');
+        return;
+      }
+      gl.attachShader(prog, vs);
+      gl.attachShader(prog, fs);
+      gl.linkProgram(prog);
+      gl.deleteShader(vs);
+      gl.deleteShader(fs);
+      if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+        canvas.setAttribute('data-failed', '');
+        return;
+      }
+      gl.useProgram(prog);
+      const buf = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+      gl.enableVertexAttribArray(0);
+      gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+      const uTime = gl.getUniformLocation(prog, 'u_time');
+      const uRes = gl.getUniformLocation(prog, 'u_resolution');
+      const MAX_PIXELS = 1000000;
+      const resize = () => {
+        const cssW = Math.max(1, window.innerWidth);
+        const cssH = Math.max(1, window.innerHeight);
+        const scale = Math.min(window.devicePixelRatio || 1, 1.25) * 0.55;
+        let w = Math.max(2, Math.round(cssW * scale));
+        let h = Math.max(2, Math.round(cssH * scale));
+        const over = (w * h) / MAX_PIXELS;
+        if (over > 1) {
+          const k = 1 / Math.sqrt(over);
+          w = Math.round(w * k);
+          h = Math.round(h * k);
+        }
+        if (canvas.width !== w || canvas.height !== h) {
+          canvas.width = w;
+          canvas.height = h;
+          gl.viewport(0, 0, w, h);
+        }
+        gl.uniform2f(uRes, w, h);
+      };
+      resize();
+      let resizeQueued = false;
+      const queueResize = () => {
+        if (resizeQueued) return;
+        resizeQueued = true;
+        requestAnimationFrame(() => {
+          resizeQueued = false;
+          resize();
+        });
+      };
+      window.addEventListener('resize', queueResize, { passive: true });
+      if ('ResizeObserver' in window) {
+        new ResizeObserver(queueResize).observe(document.documentElement);
+      }
+      const T0 = 9.0;
+      let start = performance.now();
+      let raf = 0;
+      let lastDraw = 0;
+      let inView = true;
+      let visible = !document.hidden;
+      const queue = () => {
+        if (raf || !visible || !inView || reduceMotion) return;
+        raf = requestAnimationFrame(draw);
+      };
+      const draw = (now) => {
+        raf = 0;
+        if (now - lastDraw < 33) {
+          queue();
+          return;
+        }
+        lastDraw = now;
+        gl.uniform1f(uTime, T0 + (now - start) / 1000);
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+        queue();
+      };
+      if (reduceMotion) {
+        gl.uniform1f(uTime, T0);
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+      } else {
+        queue();
+        document.addEventListener('visibilitychange', () => {
+          visible = !document.hidden;
+          if (visible) {
+            lastDraw = 0;
+            queue();
+          } else if (raf) {
+            cancelAnimationFrame(raf);
+            raf = 0;
+          }
+        });
+        if ('IntersectionObserver' in window) {
+          new IntersectionObserver((entries) => {
+            inView = entries[0] ? entries[0].isIntersecting : true;
+            if (inView) {
+              queue();
+            } else if (raf) {
+              cancelAnimationFrame(raf);
+              raf = 0;
+            }
+          }).observe(canvas);
+        }
+        canvas.addEventListener('webglcontextlost', (e) => {
+          e.preventDefault();
+          if (raf) {
+            cancelAnimationFrame(raf);
+            raf = 0;
+          }
+          canvas.setAttribute('data-failed', '');
+        });
+      }
+    })();
+  </script>
+</Layout>

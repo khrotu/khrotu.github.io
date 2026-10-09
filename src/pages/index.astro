@@ -23,7 +23,7 @@ const rows = [
       {
         titleHtml: '<a href="https://github.com/khrotu/arc" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors underline underline-offset-4 decoration-white/20 hover:decoration-white/60">Arc</a>',
         period: '2026 - present',
-        bodyHtml: 'sub-1 mb agentic coding assistant for VS Code with free GLM 5.3 Flash. <a href="https://marketplace.visualstudio.com/items?itemName=khrotu.arc-code" target="_blank" rel="noopener noreferrer" class="underline hover:text-white transition-colors">install</a>.',
+        bodyHtml: 'sub-1 mb agentic coding assistant for VS Code with free MiMo-V2.6-Pro. <a href="https://marketplace.visualstudio.com/items?itemName=khrotu.arc-code" target="_blank" rel="noopener noreferrer" class="underline hover:text-white transition-colors">install</a>.',
       },
     ],
   },
@@ -130,7 +130,7 @@ const cardClass = 'shrink-0 w-[85vw] md:w-[400px] bg-transparent border border-[
       {rows.map((row) => (
         <div class="flex flex-col gap-6">
           <h3 class="text-xl font-medium text-[var(--text-muted)]">{row.heading}</h3>
-          <div class="drag-row flex overflow-x-auto gap-6 pb-4 hide-scrollbar cursor-grab" role="region" tabindex="0" aria-label={row.heading}>
+            <div class="drag-row flex overflow-x-auto gap-6 pb-4 hide-scrollbar cursor-grab" style="touch-action: pan-y" role="region" tabindex="0" aria-label={row.heading}>
             {row.items.map((item) => (
               <article class={cardClass}>
                 <div class="flex justify-between items-start gap-4">
@@ -174,48 +174,80 @@ const cardClass = 'shrink-0 w-[85vw] md:w-[400px] bg-transparent border border-[
       }
     });
     let dragging = false;
+    let moved = false;
     let startX = 0;
-    let scrollLeft = 0;
+    let scrollStart = 0;
     let prevX = 0;
     let prevT = 0;
     let velX = 0;
     let frame = 0;
-    const momentum = () => {
-      if (dragging || reduceMotion) return;
-      velX *= 0.96;
-      el.scrollLeft -= velX;
-      if (Math.abs(velX) >= 0.5) frame = requestAnimationFrame(momentum);
+    let activeId = -1;
+    const stopMomentum = () => {
+      if (frame) cancelAnimationFrame(frame);
+      frame = 0;
     };
-    el.addEventListener('mousedown', (e) => {
-      cancelAnimationFrame(frame);
+    const momentum = () => {
+      frame = 0;
+      if (dragging || reduceMotion) return;
+      velX *= 0.94;
+      if (Math.abs(velX) < 0.5) {
+        velX = 0;
+        return;
+      }
+      el.scrollLeft -= velX;
+      frame = requestAnimationFrame(momentum);
+    };
+    el.addEventListener('dragstart', (e) => e.preventDefault());
+    el.addEventListener('click', (e) => {
+      if (moved) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }, true);
+    el.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      stopMomentum();
       dragging = true;
+      moved = false;
       startX = e.clientX;
-      scrollLeft = el.scrollLeft;
+      scrollStart = el.scrollLeft;
       prevX = e.clientX;
       prevT = performance.now();
       velX = 0;
+      activeId = e.pointerId;
+      try {
+        el.setPointerCapture(e.pointerId);
+      } catch {}
       el.style.cursor = 'grabbing';
       el.style.userSelect = 'none';
     });
-    el.addEventListener('mousemove', (e) => {
-      if (!dragging) return;
+    el.addEventListener('pointermove', (e) => {
+      if (!dragging || e.pointerId !== activeId) return;
+      const dx = e.clientX - startX;
+      if (!moved && Math.abs(dx) < 6) return;
+      moved = true;
       e.preventDefault();
       const now = performance.now();
       const dt = now - prevT;
-      const dx = e.clientX - prevX;
-      if (dt > 0) velX = (dx / dt) * 10;
+      if (dt > 0) velX = Math.max(-30, Math.min(30, ((e.clientX - prevX) / dt) * 10));
       prevX = e.clientX;
       prevT = now;
-      el.scrollLeft = scrollLeft - (e.clientX - startX);
+      el.scrollLeft = scrollStart - dx;
     });
-    const release = () => {
-      if (!dragging) return;
+    const release = (e: PointerEvent) => {
+      if (!dragging || e.pointerId !== activeId) return;
       dragging = false;
+      activeId = -1;
       el.style.cursor = '';
       el.style.userSelect = '';
+      if (!moved || reduceMotion) {
+        velX = 0;
+        return;
+      }
       frame = requestAnimationFrame(momentum);
     };
-    el.addEventListener('mouseup', release);
-    el.addEventListener('mouseleave', release);
+    el.addEventListener('pointerup', release);
+    el.addEventListener('pointercancel', release);
+    el.addEventListener('lostpointercapture', release);
   });
 </script>
