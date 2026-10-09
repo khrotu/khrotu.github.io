@@ -98,10 +98,9 @@ import Layout from '../layouts/Layout.astro';
       position: absolute;
       inset: 0;
       background:
-        radial-gradient(60% 50% at 25% 30%, rgba(10, 40, 80, 0.8), transparent 70%),
-        radial-gradient(55% 50% at 75% 25%, rgba(0, 127, 212, 0.28), transparent 70%),
-        repeating-linear-gradient(115deg, rgba(76, 194, 255, 0.06) 0 2px, transparent 2px 16px),
-        repeating-linear-gradient(65deg, rgba(44, 122, 123, 0.08) 0 2px, transparent 2px 20px),
+        radial-gradient(70% 55% at 30% 35%, rgba(0, 80, 140, 0.35), transparent 70%),
+        radial-gradient(60% 55% at 70% 65%, rgba(0, 60, 110, 0.30), transparent 70%),
+        radial-gradient(50% 40% at 50% 50%, rgba(20, 50, 90, 0.25), transparent 70%),
         #040404;
     }
     .arc-canvas + .arc-fallback {
@@ -118,8 +117,8 @@ import Layout from '../layouts/Layout.astro';
       inset: 0;
       pointer-events: none;
       background:
-        radial-gradient(72% 62% at 50% 46%, rgba(0, 0, 0, 0.10) 0%, rgba(0, 0, 0, 0.36) 68%, rgba(0, 0, 0, 0.60) 100%),
-        linear-gradient(to top, rgba(0, 0, 0, 0.40), transparent 26%, transparent 72%, rgba(0, 0, 0, 0.28));
+        radial-gradient(72% 62% at 50% 46%, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.20) 68%, rgba(0, 0, 0, 0.36) 100%),
+        linear-gradient(to top, rgba(0, 0, 0, 0.22), transparent 26%, transparent 72%, rgba(0, 0, 0, 0.14));
     }
     .arc-hero {
       position: absolute;
@@ -158,7 +157,7 @@ import Layout from '../layouts/Layout.astro';
       height: auto;
       user-select: none;
       -webkit-user-select: none;
-      filter: drop-shadow(0 10px 44px rgba(0, 0, 0, 0.6));
+      filter: drop-shadow(0 10px 44px rgba(0, 0, 0, 0.65));
       animation: arc-rise 1s cubic-bezier(0.2, 0.7, 0.2, 1) both;
     }
     @keyframes arc-rise {
@@ -393,26 +392,39 @@ import Layout from '../layouts/Layout.astro';
           vec2 p = v_uv - 0.5;
           p.x *= u_resolution.x / u_resolution.y;
           float t = u_time;
-        float w1 = fbm(p * 1.1 + vec2(t * 0.030, t * 0.015));
-        float w2 = fbm(p * 1.1 + vec2(4.7, 1.3) - vec2(t * 0.021, t * 0.010));
+        float w1 = fbm(p * 1.1 + vec2(t * 0.085, t * 0.042));
+        float w2 = fbm(p * 1.1 + vec2(4.7, 1.3) - vec2(t * 0.060, t * 0.028));
         vec2 q = vec2(w1, w2);
         float f = fbm(p * 1.4 + 1.1 * q);
-        float streak = (p.x * 2.6 - p.y * 3.4) + (q.x - q.y) * 2.0 + f * 2.4;
-        float line1 = pow(1.0 - abs(sin(streak + t * 0.05)), 6.0);
-        float line2 = pow(1.0 - abs(sin(streak * 0.45 - p.y * 1.1 - t * 0.035)), 10.0);
+        float r0 = length(p);
+        float sw = r0 * 0.7 - t * 0.045;
+        float cs = cos(sw);
+        float sn = sin(sw);
+        vec2 dp = mat2(cs, -sn, sn, cs) * p + (q - 0.5) * 0.7;
+        float fold1 = sin((dp.x * 2.0 - dp.y * 2.6) + (q.x - q.y) * 2.0 + f * 3.0 + t * 0.12);
+        float fold2 = sin((dp.x * 1.1 + dp.y * 1.7) - f * 2.2 + 1.7 + t * 0.05);
+        float folds = fold1 * 0.65 + fold2 * 0.35;
+        float soft = smoothstep(-1.0, 1.0, folds);
+        float sheen = pow(smoothstep(0.0, 1.0, folds), 3.0);
+        float depthS = 1.0 - smoothstep(-1.0, 0.0, folds);
+        float edgeGlow = pow(1.0 - abs(folds), 4.0);
           vec3 deep = vec3(0.030, 0.040, 0.060);
           vec3 navy = vec3(0.045, 0.110, 0.250);
           vec3 azure = vec3(0.000, 0.498, 0.831);
           vec3 ice = vec3(0.300, 0.760, 1.000);
           vec3 teal = vec3(0.173, 0.478, 0.482);
         float field = q.x * 0.6 + q.y * 0.4;
+        float baseLift = fbm(p * 0.9 + vec2(2.3 + t * 0.020, 7.1 - t * 0.013));
         vec3 col = deep;
-        col = mix(col, navy, smoothstep(0.25, 0.85, field) * 0.9);
-        col = mix(col, teal, smoothstep(0.55, 0.95, f) * 0.30);
-        col += line1 * ice * 0.22;
-        col += line2 * azure * 0.14;
+        col = mix(col, navy, smoothstep(0.15, 0.75, field + baseLift * 0.18) * 1.0);
+        col = mix(col, teal * 0.9, smoothstep(0.40, 0.88, f + baseLift * 0.10) * 0.55);
+        col *= 0.72 + 0.58 * soft;
+        col -= depthS * deep * 0.6;
+        col += sheen * ice * 0.16 + sheen * azure * 0.12;
+        col += edgeGlow * azure * 0.09;
+        col *= 1.30;
           vec2 vg = (v_uv - 0.5) * vec2(1.2, 1.0);
-          col *= clamp(1.0 - 0.55 * pow(length(vg) * 1.5, 2.0), 0.0, 1.0);
+          col *= clamp(1.0 - 0.22 * pow(length(vg) * 1.5, 2.0), 0.0, 1.0);
           col += (fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453) - 0.5) / 255.0;
           fragColor = vec4(col, 1.0);
         }`;
@@ -507,7 +519,7 @@ import Layout from '../layouts/Layout.astro';
       if ('ResizeObserver' in window) {
         new ResizeObserver(queueResize).observe(document.documentElement);
       }
-      const T0 = 9.0;
+      const T0 = 32.0;
       let start = performance.now();
       let raf = 0;
       let lastDraw = 0;
